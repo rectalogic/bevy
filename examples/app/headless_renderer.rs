@@ -72,7 +72,7 @@ fn main() {
     let config = AppConfig {
         width: 1920,
         height: 1080,
-        single_image: true,
+        single_image: false,
     };
 
     // setup frame capture
@@ -166,7 +166,7 @@ fn setup(
         // 2. Few black box images
         // 3. Fully rendered scene images
         // Exact number depends on device speed, device load and scene size
-        40,
+        0,
         "main_scene".into(),
     );
 
@@ -546,7 +546,7 @@ fn update(
                         panic!("Failed to save image: {e}");
                     };
                 }
-                if scene_controller.single_image {
+                if *file_number >= 3 {
                     app_exit_writer.write(AppExit::Success);
                 }
             }
