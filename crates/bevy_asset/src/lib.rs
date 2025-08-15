@@ -167,9 +167,9 @@ pub mod prelude {
 
     #[doc(hidden)]
     pub use crate::{
-        Asset, AssetApp, AssetDependencyOf, AssetDependent, AssetEvent, AssetId, AssetMode,
-        AssetPlugin, AssetServer, Assets, BuildAssetDependencyExt, DirectAssetAccessExt, Handle,
-        UntypedHandle,
+        Asset, AssetApp, AssetDependency, AssetDependent, AssetEvent, AssetId, AssetMode,
+        AssetPlugin, AssetServer, Assets, BuildAssetDependencyExt, CommandsAssetDependencyExt,
+        DirectAssetAccessExt, Handle, UntypedHandle,
     };
 }
 
@@ -190,7 +190,9 @@ mod server;
 
 pub use assets::*;
 pub use bevy_asset_macros::Asset;
-pub use dependencies::{AssetDependencyOf, AssetDependent, BuildAssetDependencyExt};
+pub use dependencies::{
+    AssetDependency, AssetDependent, BuildAssetDependencyExt, CommandsAssetDependencyExt,
+};
 pub use direct_access_ext::DirectAssetAccessExt;
 pub use event::*;
 pub use folder::*;

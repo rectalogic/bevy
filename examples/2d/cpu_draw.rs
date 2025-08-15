@@ -78,27 +78,46 @@ fn setup(
         }
     }
 
+    let mesh_handle = meshes.add(Rectangle::new(IMAGE_WIDTH as f32, IMAGE_HEIGHT as f32));
+
     // Add it to Bevy's assets, so it can be used for rendering
     // this will give us a handle we can use
     // (to display it in a sprite, or as part of UI, etc.)
     let image_handle = images.add(image);
 
-    let material_handle = materials.add(ColorMaterial {
+    let material_handle1 = materials.add(ColorMaterial {
         texture: Some(image_handle.clone()),
+        // color: css::CRIMSON.into(),
         ..default()
     });
-    let material_handle_id = material_handle.id();
+    let material_handle_id1 = material_handle1.id();
+    let material_handle2 = materials.add(ColorMaterial {
+        texture: Some(image_handle.clone()),
+        // color: css::BLUE.into(),
+        ..default()
+    });
+    let material_handle_id2 = material_handle2.id();
 
-    // Create a material using our image
+    // Create materials using our image
     // Could also use a Sprite
     // commands.spawn(Sprite::from_image(handle.clone()));
-    commands
-        .spawn((
-            MeshMaterial2d(material_handle),
-            Mesh2d(meshes.add(Rectangle::new(IMAGE_WIDTH as f32, IMAGE_HEIGHT as f32))),
-        ))
-        .insert_dependent_asset(material_handle_id)
-        .with_asset_dependency(&image_handle);
+    let mut entity_commands = commands.spawn_asset_dependency(&image_handle);
+    entity_commands.with_dependent_asset(
+        material_handle_id1,
+        (
+            MeshMaterial2d(material_handle1),
+            Mesh2d(mesh_handle.clone()),
+            Transform::from_xyz(-(IMAGE_WIDTH as f32), 0.0, 0.0),
+        ),
+    );
+    entity_commands.with_dependent_asset(
+        material_handle_id2,
+        (
+            MeshMaterial2d(material_handle2),
+            Mesh2d(mesh_handle),
+            Transform::from_xyz(IMAGE_WIDTH as f32, 0.0, 0.0),
+        ),
+    );
     commands.insert_resource(MyProcGenImage(image_handle));
 
     // We're seeding the PRNG here to make this example deterministic for testing purposes.

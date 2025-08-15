@@ -1,5 +1,5 @@
 use crate::asset_changed::{AssetChanged, AssetChanges};
-use crate::dependencies::{AssetDependencyChanged, AssetDependencyOf, AssetDependent};
+use crate::dependencies::{AssetDependency, AssetDependencyChanged, AssetDependent};
 use crate::{Asset, AssetEvent, AssetHandleProvider, AssetId, AssetServer, Handle, UntypedHandle};
 use alloc::{sync::Arc, vec::Vec};
 use bevy_ecs::entity::Entity;
@@ -626,24 +626,24 @@ impl<A: Asset> Assets<A> {
         !assets.queued_events.is_empty()
     }
 
-    // XXX AssetChanged is updated in Last
     pub(crate) fn monitor_asset_dependencies(
         mut commands: Commands,
         modified_dependencies: Query<
-            &AssetDependencyOf<A>,
+            &AssetDependency<A>,
             Or<(
-                Changed<AssetDependencyOf<A>>,
-                AssetChanged<AssetDependencyOf<A>>,
+                Changed<AssetDependency<A>>,
+                AssetChanged<AssetDependency<A>>,
             )>,
         >,
     ) {
         for dependency in &modified_dependencies {
-            commands
-                .entity(dependency.dependent)
-                .insert(AssetDependencyChanged);
+            for dependent in dependency.dependents() {
+                commands.entity(*dependent).insert(AssetDependencyChanged);
+            }
         }
     }
 
+    // XXX AssetChanged is updated in Last
     pub(crate) fn monitor_asset_dependents(
         mut commands: Commands,
         modified_dependents: Query<(Entity, &AssetDependent<A>), With<AssetDependencyChanged>>,
