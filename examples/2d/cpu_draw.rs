@@ -35,7 +35,12 @@ struct MyProcGenImage(Handle<Image>);
 #[derive(Resource)]
 struct SeededRng(ChaCha8Rng);
 
-fn setup(mut commands: Commands, mut images: ResMut<Assets<Image>>) {
+fn setup(
+    mut commands: Commands,
+    mut images: ResMut<Assets<Image>>,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<ColorMaterial>>,
+) {
     commands.spawn(Camera2d);
 
     // Create an image that we are going to draw into
@@ -78,8 +83,16 @@ fn setup(mut commands: Commands, mut images: ResMut<Assets<Image>>) {
     // (to display it in a sprite, or as part of UI, etc.)
     let handle = images.add(image);
 
-    // Create a sprite entity using our image
-    commands.spawn(Sprite::from_image(handle.clone()));
+    // Create a material using our image
+    // Could also use a Sprite
+    // commands.spawn(Sprite::from_image(handle.clone()));
+    commands.spawn((
+        MeshMaterial2d(materials.add(ColorMaterial {
+            texture: Some(handle.clone()),
+            ..default()
+        })),
+        Mesh2d(meshes.add(Rectangle::new(IMAGE_WIDTH as f32, IMAGE_HEIGHT as f32))),
+    ));
     commands.insert_resource(MyProcGenImage(handle));
 
     // We're seeding the PRNG here to make this example deterministic for testing purposes.
