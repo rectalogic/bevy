@@ -1,6 +1,10 @@
-use crate::asset_changed::AssetChanges;
+use crate::asset_changed::{AssetChanged, AssetChanges};
+use crate::dependencies::{AssetDependencyChanged, AssetDependencyOf, AssetDependent};
 use crate::{Asset, AssetEvent, AssetHandleProvider, AssetId, AssetServer, Handle, UntypedHandle};
 use alloc::{sync::Arc, vec::Vec};
+use bevy_ecs::entity::Entity;
+use bevy_ecs::query::{Changed, Or, With};
+use bevy_ecs::system::{Commands, Query};
 use bevy_ecs::{
     prelude::EventWriter,
     resource::Resource,
@@ -620,6 +624,37 @@ impl<A: Asset> Assets<A> {
     /// [`asset_events`]: Self::asset_events
     pub(crate) fn asset_events_condition(assets: Res<Self>) -> bool {
         !assets.queued_events.is_empty()
+    }
+
+    // XXX AssetChanged is updated in Last
+    pub(crate) fn monitor_asset_dependencies(
+        mut commands: Commands,
+        modified_dependencies: Query<
+            &AssetDependencyOf<A>,
+            Or<(
+                Changed<AssetDependencyOf<A>>,
+                AssetChanged<AssetDependencyOf<A>>,
+            )>,
+        >,
+    ) {
+        for dependency in &modified_dependencies {
+            commands
+                .entity(dependency.dependent)
+                .insert(AssetDependencyChanged);
+        }
+    }
+
+    pub(crate) fn monitor_asset_dependents(
+        mut commands: Commands,
+        modified_dependents: Query<(Entity, &AssetDependent<A>), With<AssetDependencyChanged>>,
+        mut assets: ResMut<Self>,
+    ) {
+        for (entity, dependent) in &modified_dependents {
+            commands.entity(entity).remove::<AssetDependencyChanged>();
+            assets.queued_events.push(AssetEvent::Modified {
+                id: dependent.asset_id(),
+            });
+        }
     }
 }
 

@@ -167,13 +167,15 @@ pub mod prelude {
 
     #[doc(hidden)]
     pub use crate::{
-        Asset, AssetApp, AssetEvent, AssetId, AssetMode, AssetPlugin, AssetServer, Assets,
-        DirectAssetAccessExt, Handle, UntypedHandle,
+        Asset, AssetApp, AssetDependencyOf, AssetDependent, AssetEvent, AssetId, AssetMode,
+        AssetPlugin, AssetServer, Assets, BuildAssetDependencyExt, DirectAssetAccessExt, Handle,
+        UntypedHandle,
     };
 }
 
 mod asset_changed;
 mod assets;
+mod dependencies;
 mod direct_access_ext;
 mod event;
 mod folder;
@@ -188,6 +190,7 @@ mod server;
 
 pub use assets::*;
 pub use bevy_asset_macros::Asset;
+pub use dependencies::{AssetDependencyOf, AssetDependent, BuildAssetDependencyExt};
 pub use direct_access_ext::DirectAssetAccessExt;
 pub use event::*;
 pub use folder::*;
@@ -611,9 +614,16 @@ impl AssetApp for App {
             .register_type::<Handle<A>>()
             .add_systems(
                 PostUpdate,
-                Assets::<A>::asset_events
-                    .run_if(Assets::<A>::asset_events_condition)
-                    .in_set(AssetEventSystems),
+                Assets::<A>::monitor_asset_dependencies.before(AssetEventSystems),
+            )
+            .add_systems(
+                PostUpdate,
+                (
+                    Assets::<A>::monitor_asset_dependents,
+                    Assets::<A>::asset_events.run_if(Assets::<A>::asset_events_condition),
+                )
+                    .in_set(AssetEventSystems)
+                    .chain(),
             )
             .add_systems(
                 PreUpdate,
