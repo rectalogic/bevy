@@ -81,19 +81,25 @@ fn setup(
     // Add it to Bevy's assets, so it can be used for rendering
     // this will give us a handle we can use
     // (to display it in a sprite, or as part of UI, etc.)
-    let handle = images.add(image);
+    let image_handle = images.add(image);
+
+    let material_handle = materials.add(ColorMaterial {
+        texture: Some(image_handle.clone()),
+        ..default()
+    });
+    let material_handle_id = material_handle.id();
 
     // Create a material using our image
     // Could also use a Sprite
     // commands.spawn(Sprite::from_image(handle.clone()));
-    commands.spawn((
-        MeshMaterial2d(materials.add(ColorMaterial {
-            texture: Some(handle.clone()),
-            ..default()
-        })),
-        Mesh2d(meshes.add(Rectangle::new(IMAGE_WIDTH as f32, IMAGE_HEIGHT as f32))),
-    ));
-    commands.insert_resource(MyProcGenImage(handle));
+    commands
+        .spawn((
+            MeshMaterial2d(material_handle),
+            Mesh2d(meshes.add(Rectangle::new(IMAGE_WIDTH as f32, IMAGE_HEIGHT as f32))),
+        ))
+        .insert_dependent_asset(material_handle_id)
+        .with_asset_dependency(&image_handle);
+    commands.insert_resource(MyProcGenImage(image_handle));
 
     // We're seeding the PRNG here to make this example deterministic for testing purposes.
     // This isn't strictly required in practical use unless you need your app to be deterministic.
