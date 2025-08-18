@@ -90,34 +90,35 @@ fn setup(
         color: css::CRIMSON.into(),
         ..default()
     });
-    let material_handle_id1 = material_handle1.id();
     let material_handle2 = materials.add(ColorMaterial {
         texture: Some(image_handle.clone()),
         color: css::BLUE.into(),
         ..default()
     });
-    let material_handle_id2 = material_handle2.id();
 
     // Create materials using our image
     // Could also use a Sprite
     // commands.spawn(Sprite::from_image(handle.clone()));
-    let mut entity_commands = commands.spawn_asset_dependency(&image_handle);
-    entity_commands.with_dependent_asset(
-        material_handle_id1,
-        (
-            MeshMaterial2d(material_handle1),
-            Mesh2d(mesh_handle.clone()),
-            Transform::from_xyz(-(IMAGE_WIDTH as f32), 0.0, 0.0),
-        ),
-    );
-    entity_commands.with_dependent_asset(
-        material_handle_id2,
-        (
-            MeshMaterial2d(material_handle2),
-            Mesh2d(mesh_handle),
-            Transform::from_xyz(IMAGE_WIDTH as f32, 0.0, 0.0),
-        ),
-    );
+    commands
+        .spawn_asset(&material_handle1)
+        .with_asset_dependency(
+            &image_handle,
+            (
+                MeshMaterial2d(material_handle1),
+                Mesh2d(mesh_handle.clone()),
+                Transform::from_xyz(-(IMAGE_WIDTH as f32), 0.0, 0.0),
+            ),
+        );
+    commands
+        .spawn_asset(&material_handle2)
+        .with_asset_dependency(
+            &image_handle,
+            (
+                MeshMaterial2d(material_handle2),
+                Mesh2d(mesh_handle),
+                Transform::from_xyz(IMAGE_WIDTH as f32, 0.0, 0.0),
+            ),
+        );
     commands.insert_resource(MyProcGenImage(image_handle));
 
     // We're seeding the PRNG here to make this example deterministic for testing purposes.

@@ -1,5 +1,5 @@
 use crate::asset_changed::{AssetChanged, AssetChanges};
-use crate::dependency::{AssetDependencyChanged, Dependency, Dependent};
+use crate::dependency::{AssetDependencyChanged, Dependencies, DependencyOf};
 use crate::{
     AsAssetId, Asset, AssetDependency, AssetDependent, AssetEvent, AssetHandleProvider, AssetId,
     AssetServer, Handle, UntypedHandle,
@@ -7,6 +7,7 @@ use crate::{
 use alloc::{sync::Arc, vec::Vec};
 use bevy_ecs::entity::Entity;
 use bevy_ecs::query::{Changed, Or, With};
+use bevy_ecs::relationship::Relationship;
 use bevy_ecs::system::{Commands, Query};
 use bevy_ecs::{
     prelude::EventWriter,
@@ -629,12 +630,11 @@ impl<A: Asset> Assets<A> {
         !assets.queued_events.is_empty()
     }
 
-    pub(crate) fn monitor_asset_dependencies(
+    pub(crate) fn monitor_modified_asset_dependencies(
         mut commands: Commands,
         modified_dependencies: Query<
-            &Dependency,
+            &DependencyOf,
             (
-                With<Dependency>,
                 With<AssetDependency<A>>,
                 Or<(
                     Changed<AssetDependency<A>>,
@@ -644,25 +644,25 @@ impl<A: Asset> Assets<A> {
         >,
     ) {
         for dependency in &modified_dependencies {
-            for dependent in dependency.dependents() {
-                commands.entity(*dependent).insert(AssetDependencyChanged);
-            }
+            commands
+                .entity(dependency.get())
+                .insert(AssetDependencyChanged);
         }
     }
 
     // XXX AssetChanged is updated in Last
-    pub(crate) fn monitor_asset_dependents(
+    pub(crate) fn update_asset_dependents(
         mut commands: Commands,
         modified_dependents: Query<
             (Entity, &AssetDependent<A>),
-            (With<Dependent>, With<AssetDependencyChanged>),
+            (With<Dependencies>, With<AssetDependencyChanged>),
         >,
         mut assets: ResMut<Self>,
     ) {
-        for (entity, component) in &modified_dependents {
+        for (entity, dependent) in &modified_dependents {
             commands.entity(entity).remove::<AssetDependencyChanged>();
             assets.queued_events.push(AssetEvent::Modified {
-                id: component.as_asset_id(),
+                id: dependent.as_asset_id(),
             });
         }
     }

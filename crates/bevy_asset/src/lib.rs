@@ -616,12 +616,12 @@ impl AssetApp for App {
             .register_type::<Handle<A>>()
             .add_systems(
                 PostUpdate,
-                Assets::<A>::monitor_asset_dependencies.before(AssetEventSystems),
+                Assets::<A>::monitor_modified_asset_dependencies.before(AssetEventSystems),
             )
             .add_systems(
                 PostUpdate,
                 (
-                    Assets::<A>::monitor_asset_dependents,
+                    Assets::<A>::update_asset_dependents,
                     Assets::<A>::asset_events.run_if(Assets::<A>::asset_events_condition),
                 )
                     .in_set(AssetEventSystems)
