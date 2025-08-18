@@ -1,6 +1,9 @@
 use crate::asset_changed::{AssetChanged, AssetChanges};
-use crate::dependencies::{AssetDependency, AssetDependencyChanged, AssetDependent};
-use crate::{Asset, AssetEvent, AssetHandleProvider, AssetId, AssetServer, Handle, UntypedHandle};
+use crate::dependency::{AssetDependencyChanged, Dependency, Dependent};
+use crate::{
+    AsAssetId, Asset, AssetDependency, AssetDependent, AssetEvent, AssetHandleProvider, AssetId,
+    AssetServer, Handle, UntypedHandle,
+};
 use alloc::{sync::Arc, vec::Vec};
 use bevy_ecs::entity::Entity;
 use bevy_ecs::query::{Changed, Or, With};
@@ -629,11 +632,15 @@ impl<A: Asset> Assets<A> {
     pub(crate) fn monitor_asset_dependencies(
         mut commands: Commands,
         modified_dependencies: Query<
-            &AssetDependency<A>,
-            Or<(
-                Changed<AssetDependency<A>>,
-                AssetChanged<AssetDependency<A>>,
-            )>,
+            &Dependency,
+            (
+                With<Dependency>,
+                With<AssetDependency<A>>,
+                Or<(
+                    Changed<AssetDependency<A>>,
+                    AssetChanged<AssetDependency<A>>,
+                )>,
+            ),
         >,
     ) {
         for dependency in &modified_dependencies {
@@ -646,13 +653,16 @@ impl<A: Asset> Assets<A> {
     // XXX AssetChanged is updated in Last
     pub(crate) fn monitor_asset_dependents(
         mut commands: Commands,
-        modified_dependents: Query<(Entity, &AssetDependent<A>), With<AssetDependencyChanged>>,
+        modified_dependents: Query<
+            (Entity, &AssetDependent<A>),
+            (With<Dependent>, With<AssetDependencyChanged>),
+        >,
         mut assets: ResMut<Self>,
     ) {
-        for (entity, dependent) in &modified_dependents {
+        for (entity, component) in &modified_dependents {
             commands.entity(entity).remove::<AssetDependencyChanged>();
             assets.queued_events.push(AssetEvent::Modified {
-                id: dependent.asset_id(),
+                id: component.as_asset_id(),
             });
         }
     }

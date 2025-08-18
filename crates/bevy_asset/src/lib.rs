@@ -175,7 +175,7 @@ pub mod prelude {
 
 mod asset_changed;
 mod assets;
-mod dependencies;
+mod dependency;
 mod direct_access_ext;
 mod event;
 mod folder;
@@ -190,7 +190,7 @@ mod server;
 
 pub use assets::*;
 pub use bevy_asset_macros::Asset;
-pub use dependencies::{
+pub use dependency::{
     AssetDependency, AssetDependent, BuildAssetDependencyExt, CommandsAssetDependencyExt,
 };
 pub use direct_access_ext::DirectAssetAccessExt;

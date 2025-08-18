@@ -87,13 +87,13 @@ fn setup(
 
     let material_handle1 = materials.add(ColorMaterial {
         texture: Some(image_handle.clone()),
-        // color: css::CRIMSON.into(),
+        color: css::CRIMSON.into(),
         ..default()
     });
     let material_handle_id1 = material_handle1.id();
     let material_handle2 = materials.add(ColorMaterial {
         texture: Some(image_handle.clone()),
-        // color: css::BLUE.into(),
+        color: css::BLUE.into(),
         ..default()
     });
     let material_handle_id2 = material_handle2.id();
