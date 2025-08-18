@@ -101,24 +101,20 @@ fn setup(
     // commands.spawn(Sprite::from_image(handle.clone()));
     commands
         .spawn_asset(&material_handle1)
-        .with_asset_dependency(
-            &image_handle,
-            (
-                MeshMaterial2d(material_handle1),
-                Mesh2d(mesh_handle.clone()),
-                Transform::from_xyz(-(IMAGE_WIDTH as f32), 0.0, 0.0),
-            ),
-        );
+        .with_asset_dependency(&image_handle);
+    commands.spawn((
+        MeshMaterial2d(material_handle1),
+        Mesh2d(mesh_handle.clone()),
+        Transform::from_xyz(-(IMAGE_WIDTH as f32), 0.0, 0.0),
+    ));
     commands
         .spawn_asset(&material_handle2)
-        .with_asset_dependency(
-            &image_handle,
-            (
-                MeshMaterial2d(material_handle2),
-                Mesh2d(mesh_handle),
-                Transform::from_xyz(IMAGE_WIDTH as f32, 0.0, 0.0),
-            ),
-        );
+        .with_asset_dependency(&image_handle);
+    commands.spawn((
+        MeshMaterial2d(material_handle2),
+        Mesh2d(mesh_handle),
+        Transform::from_xyz(IMAGE_WIDTH as f32, 0.0, 0.0),
+    ));
     commands.insert_resource(MyProcGenImage(image_handle));
 
     // We're seeding the PRNG here to make this example deterministic for testing purposes.

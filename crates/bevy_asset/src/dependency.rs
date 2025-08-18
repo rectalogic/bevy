@@ -2,7 +2,6 @@ use alloc::vec::Vec;
 
 use crate::{AsAssetId, Asset, AssetId};
 use bevy_ecs::{
-    bundle::Bundle,
     component::Component,
     entity::Entity,
     relationship::Relationship,
@@ -66,41 +65,27 @@ impl CommandsAssetDependencyExt for Commands<'_, '_> {
 }
 
 pub trait BuildAssetDependencyExt {
-    fn with_asset_dependency<A: Asset, AI: Into<AssetId<A>>>(
-        &mut self,
-        asset_id: AI,
-        bundle: impl Bundle,
-    ) -> &mut Self;
+    fn with_asset_dependency<A: Asset, AI: Into<AssetId<A>>>(&mut self, asset_id: AI) -> &mut Self;
 }
 
 impl BuildAssetDependencyExt for EntityCommands<'_> {
-    fn with_asset_dependency<A: Asset, AI: Into<AssetId<A>>>(
-        &mut self,
-        asset_id: AI,
-        bundle: impl Bundle,
-    ) -> &mut Self {
+    fn with_asset_dependency<A: Asset, AI: Into<AssetId<A>>>(&mut self, asset_id: AI) -> &mut Self {
         let dependent = self.id();
         self.commands_mut().spawn((
             <DependencyOf as Relationship>::from(dependent),
             AssetDependency(asset_id.into()),
-            bundle,
         ));
         self
     }
 }
 
 impl BuildAssetDependencyExt for EntityWorldMut<'_> {
-    fn with_asset_dependency<A: Asset, AI: Into<AssetId<A>>>(
-        &mut self,
-        asset_id: AI,
-        bundle: impl Bundle,
-    ) -> &mut Self {
+    fn with_asset_dependency<A: Asset, AI: Into<AssetId<A>>>(&mut self, asset_id: AI) -> &mut Self {
         let dependent = self.id();
         self.world_scope(|world| {
             world.spawn((
                 <DependencyOf as Relationship>::from(dependent),
                 AssetDependency(asset_id.into()),
-                bundle,
             ));
         });
         self

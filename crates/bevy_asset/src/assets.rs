@@ -630,6 +630,7 @@ impl<A: Asset> Assets<A> {
         !assets.queued_events.is_empty()
     }
 
+    // XXX AssetChanged is updated in Last
     pub(crate) fn monitor_modified_asset_dependencies(
         mut commands: Commands,
         modified_dependencies: Query<
@@ -650,7 +651,6 @@ impl<A: Asset> Assets<A> {
         }
     }
 
-    // XXX AssetChanged is updated in Last
     pub(crate) fn update_asset_dependents(
         mut commands: Commands,
         modified_dependents: Query<
